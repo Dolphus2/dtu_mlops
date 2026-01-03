@@ -178,3 +178,4 @@ tools/to_pdf/**/*.pdf
 
 # vscode
 .vscode/
+model.ckpt

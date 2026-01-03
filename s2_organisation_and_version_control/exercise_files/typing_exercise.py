@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-
+from typing import Callable, Optional, Tuple, List
 
 class Network(nn.Module):
     """Builds a feedforward network with arbitrary hidden layers.
@@ -12,20 +12,26 @@ class Network(nn.Module):
 
     """
 
-    def __init__(self, input_size, output_size, hidden_layers, drop_p=0.5) -> None:
+    def __init__(
+            self, 
+            input_size: int, 
+            output_size: int, 
+            hidden_layers: list[int], 
+            drop_p: float=0.5
+        ) -> None:
         super().__init__()
         # Input to a hidden layer
-        self.hidden_layers = nn.ModuleList([nn.Linear(input_size, hidden_layers[0])])
+        self.hidden_layers: nn.ModuleList = nn.ModuleList([nn.Linear(input_size, hidden_layers[0])])
 
         # Add a variable number of more hidden layers
-        layer_sizes = zip(hidden_layers[:-1], hidden_layers[1:])
+        layer_sizes: zip[tuple[int, int]] = zip(hidden_layers[:-1], hidden_layers[1:])
         self.hidden_layers.extend([nn.Linear(h1, h2) for h1, h2 in layer_sizes])
 
-        self.output = nn.Linear(hidden_layers[-1], output_size)
+        self.output: nn.Linear = nn.Linear(hidden_layers[-1], output_size)
 
-        self.dropout = nn.Dropout(p=drop_p)
+        self.dropout: nn.Dropout = nn.Dropout(p=drop_p)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor ) -> torch.Tensor:
         """Forward pass through the network, returns the output logits."""
         for each in self.hidden_layers:
             x = nn.functional.relu(each(x))
@@ -35,7 +41,11 @@ class Network(nn.Module):
         return nn.functional.log_softmax(x, dim=1)
 
 
-def validation(model, testloader, criterion):
+def validation(
+        model: nn.Module, 
+        testloader: torch.utils.data.DataLoader, 
+        criterion: Callable | nn.Module
+    ) -> Tuple[int, int]:
     """Validation pass through the dataset."""
     accuracy = 0
     test_loss = 0
@@ -56,7 +66,14 @@ def validation(model, testloader, criterion):
     return test_loss, accuracy
 
 
-def train(model, trainloader, testloader, criterion, optimizer=None, epochs=5, print_every=40) -> None:
+def train(
+        model: nn.Module, 
+        trainloader: torch.utils.data.DataLoader,
+        testloader: torch.utils.data.DataLoader, 
+        criterion: Callable | nn.Module, 
+        optimizer: None | torch.optim.Optimizer =None,
+        epochs: int =5, 
+        print_every: int=40) -> None:
     """Train a PyTorch Model."""
     if optimizer is None:
         optimizer = torch.optim.Adam(model.parameters(), lr=1e-2)

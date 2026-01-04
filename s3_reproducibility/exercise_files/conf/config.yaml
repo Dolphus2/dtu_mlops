@@ -1,0 +1,17 @@
+#config.yaml
+defaults:
+  - _self_
+  - optimizer: adam
+path:
+  dataset_path: "~/datasets"
+hyperparameters:
+  seed: 42
+  epochs: 5
+  lr: 1e-3
+  batch_size: 64
+  learning_rate: 1e-4
+  x_dim: 784
+  hidden_dim: 400
+  latent_dim: 20
+logging:
+  print_freq: 100

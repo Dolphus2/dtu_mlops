@@ -49,13 +49,14 @@ class Encoder(nn.Module):
         h_ = torch.relu(self.FC_input(x))
         mean = self.FC_mean(h_)
         log_var = self.FC_var(h_)
-        z = self.reparameterization(mean, log_var)
+        std = torch.exp(0.5 * log_var)
+        z = self.reparameterization(mean, std)
         return z, mean, log_var
 
-    def reparameterization(self, mean, var):
+    def reparameterization(self, mean, std):
         """Reparameterization trick to sample z values."""
-        epsilon = torch.randn(*var.shape)
-        return mean + var * epsilon
+        epsilon = torch.randn(*std.shape, device=DEVICE)
+        return mean + std * epsilon
 
 
 class Decoder(nn.Module):
@@ -64,7 +65,7 @@ class Decoder(nn.Module):
     def __init__(self, latent_dim, hidden_dim, output_dim) -> None:
         super().__init__()
         self.FC_hidden = nn.Linear(latent_dim, hidden_dim)
-        self.FC_output = nn.Linear(latent_dim, output_dim)
+        self.FC_output = nn.Linear(hidden_dim, output_dim)
 
     def forward(self, x):
         """Forward pass of the decoder module."""
@@ -115,6 +116,7 @@ for epoch in range(epochs):
         x = x.view(batch_size, x_dim)
         x = x.to(DEVICE)
 
+        optimizer.zero_grad()
         x_hat, mean, log_var = model(x)
         loss = loss_function(x, x_hat, mean, log_var)
 

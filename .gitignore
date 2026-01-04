@@ -179,3 +179,10 @@ tools/to_pdf/**/*.pdf
 # vscode
 .vscode/
 model.ckpt
+datasets
+generated_sample.png
+orig_data.png
+reconstructions.png
+profile.txt
+log
+trace.json
